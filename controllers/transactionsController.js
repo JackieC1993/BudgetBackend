@@ -2,117 +2,50 @@ const express = require('express');
 const transactionRouter = express.Router();
 const transactionArray = require('../models/data');
 
-// transactionRouter.use(express.json());
 
-// READ Transactions (Index)
-transactionRouter.get('/', (req, res, next) => {
-    try{
-        if(transactionArray && transactionArray.length > 0) { 
-            res.status(200).send(transactionArray); 
-        }
-        else {
-            res.status(404).send({message: "Could not find transactions"});
-        }
-    } 
-    
-    catch(error) {
-        next(error);
+transactionRouter.get("/", async (req, res) => {
+    const allTransactions = await getAllTransactions();
+    if (allTransactions[0]) {
+      res.status(200).json(allTransactions);
+    } else {
+      res.status(500).json({ error: "server error" });
     }
- 
-});
+  });
+  
 
-// READ Transactions (Show)
+  transactionRouter.get('/:id', async (req, res) => {
+      const {id} = req.params;
+      const oneTransactions = await getTransactions(id);
+      if (oneTransactions) {
+          res.status(200).json(oneTransactions);
+          } else {
+              res.status(404).json({ error: 'Not Found' });     
+      }
+  })
+  
 
-transactionRouter.get('/:id', (req, res, next) => { 
-    try {
-        const id = req.params.id;                           
-        const transaction = transactionArray.find(item => item.id === parseInt(id));
-
-        if(transaction){
-            res.status(200).send(transaction);
-        }
-        else {
-            res.status(404).send({message: "Error No Transaction"});
-        }
-
-    }
-    
-    catch(error){
-        next(error);
-    }
-
-});
-
-
-// Create Transactions (Create)
-transactionRouter.post('/', (req,res, next) => { 
-    try {
-        const transactionBody = req.body;
-        if(transactionBody){
-            transactionArray.push(transactionBody);
-            res.status(201).send(transactionBody);
-        }
-        else{
-            res.status(404).send({message: "Transaction was not created"});
-        }
-    }
-
-    catch(error){
-        next(error);
-    }
-
-});
-
-transactionRouter.put('/:id', (req,res,next) => {
-    try{
-        const transactionId = parseInt(req.params.id);
-        const transactionToUpdate = req.body; 
-        const transactionIndex = transactionArray.findIndex(element => element.id === transactionId);
-
-        if(transactionIndex === -1){
-            res.status(404).send({message: "Transaction not found"});
-        }
-
-        /// takes the transaction from the db (transactionArray) that matches the index
-        const currentTransaction = transactionArray[transactionIndex];
-       
-        /// loop through the transaction that was requested 
-        for(let key in transactionToUpdate) {
-            if(currentTransaction.hasOwnProperty([key])){
-                currentTransaction[key] = transactionToUpdate[key]; ///from the request
-            }
-        }
-
-        /// updates the transaction in the array of transactions (data.js)
-        transactionArray[transactionIndex] = currentTransaction;
-
-        res.send(currentTransaction);
-    }
-
-    catch(error) {
-        next(error);
-    }
-
-});
-
-
-// DELETE an item by ID
-transactionRouter.delete('/:id', (req, res, next) => {
-    try {
-        const id = parseInt(req.params.id);
-        const itemIndex = transactionArray.findIndex(item => item.id === id);
-
-        if (itemIndex === -1) {
-            return res.status(404).send({ message: 'Item not found' });
-        }
-
-        const deletedItem = transactionArray.splice(itemIndex, 1); 
-
-        res.send(deletedItem[0]);
-    } catch (error) {
-        next(error);
-    }
-});
-
-
-module.exports = transactionRouter
+  transactionRouter.post('/',checkName,checkBoolean, async (req, res) => {
+      const body = req.body
+      res.status(200).json(transactions)
+  })
+  transactionRouter.delete('/:id', async (req, res) => {
+      const {id} = req.params;
+      const deletedTransaction = await deletedTransaction(id);
+      if (deletedTransaction) {
+          res.status(200).json(deletedTransaction)
+          } else {
+              res.status(404).json({ error: 'Transaction Not Found' });         
+          }
+      });
+      
+  transactionRouter.put("/:id",checkName, checkBoolean, async (req, res) => {
+      const {id} = req.params;
+      const body = req.body
+      const updatedTransactions = await updatedTransactions(id, body);
+      res.status(200).json(updatedTransactions)
+  })
+      
+  
+  module.exports = transactionRouter;
+  
+  

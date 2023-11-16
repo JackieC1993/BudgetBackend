@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.use('/transactions', transactionsController);
 
-
+app.get('/', (req, res) => {res.status(404),res.json({message: "Not found"})});
 
 
 module.exports = app;
